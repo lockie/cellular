@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<automaton width="50" height="50">
+
+	<zerostate name="0" />
+	<state name="1" />
+
+	<!-- набор правил для диффузии -->
+	<rule oldstate="01" newstate="10" probability="0.1" />
+	<rule oldstate="10" newstate="01" probability="0.1" />
+
+	<cell x="10" y="10" state="1" />
+	<cell x="10" y="11" state="1" />
+	<cell x="11" y="10" state="1" />
+	<cell x="11" y="11" state="1" />
+	<cell x="12" y="10" state="1" />
+	<cell x="12" y="11" state="1" />
+	<cell x="13" y="10" state="1" />
+	<cell x="13" y="11" state="1" />
+	<cell x="14" y="10" state="1" />
+	<cell x="14" y="11" state="1" />
+	<cell x="15" y="10" state="1" />
+	<cell x="15" y="11" state="1" />
+
+	<cell x="10" y="12" state="1" />
+	<cell x="10" y="13" state="1" />
+	<cell x="11" y="12" state="1" />
+	<cell x="11" y="13" state="1" />
+	<cell x="12" y="12" state="1" />
+	<cell x="12" y="13" state="1" />
+	<cell x="13" y="12" state="1" />
+	<cell x="13" y="13" state="1" />
+	<cell x="14" y="12" state="1" />
+	<cell x="14" y="13" state="1" />
+	<cell x="15" y="12" state="1" />
+	<cell x="15" y="13" state="1" />
+
+	<cell x="10" y="14" state="1" />
+	<cell x="10" y="15" state="1" />
+	<cell x="11" y="14" state="1" />
+	<cell x="11" y="15" state="1" />
+	<cell x="12" y="14" state="1" />
+	<cell x="12" y="15" state="1" />
+	<cell x="13" y="14" state="1" />
+	<cell x="13" y="15" state="1" />
+	<cell x="14" y="14" state="1" />
+	<cell x="14" y="15" state="1" />
+	<cell x="15" y="14" state="1" />
+	<cell x="15" y="15" state="1" />
+
+</automaton>
+

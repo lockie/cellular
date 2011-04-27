@@ -1,0 +1,78 @@
+<?xml version="1.0"?>
+<automaton width="15" height="15">
+
+	<zerostate name="." />
+	<state name="a" />
+	<state name="A" />
+	<state name="m" />
+	<state name="*" />
+
+	<!-- набор правил для диффузии -->
+	<rule oldstate="a." newstate=".a" probability="0.5"/>
+	<rule oldstate=".a" newstate="a." probability="0.5"/>
+	<rule oldstate="A*" newstate="*A" probability="0.5"/>
+	<rule oldstate="*A" newstate="A*" probability="0.5"/>
+	<rule oldstate="*ma" newstate="Am." />
+	<rule oldstate="am*" newstate=".mA" />
+
+	<!-- границы насоса -->
+	<cell x="5" y="5" state="m" />
+	<cell x="6" y="5" state="m" />
+	<cell x="7" y="5" state="m" />
+	<cell x="8" y="5" state="m" />
+	<cell x="9" y="5" state="m" />
+	<cell x="10" y="5" state="m" />
+
+	<cell x="5" y="10" state="m" />
+	<cell x="6" y="10" state="m" />
+	<cell x="7" y="10" state="m" />
+	<cell x="8" y="10" state="m" />
+	<cell x="9" y="10" state="m" />
+	<cell x="10" y="10" state="m" />
+
+	<cell x="5" y="6" state="m" />
+	<cell x="5" y="7" state="m" />
+	<cell x="5" y="8" state="m" />
+	<cell x="5" y="9" state="m" />
+
+	<cell x="10" y="6" state="m" />
+	<cell x="10" y="7" state="m" />
+	<cell x="10" y="8" state="m" />
+	<cell x="10" y="9" state="m" />
+
+	<!-- внутреннее пространство насоса -->
+	<cell x="6" y="6" state="*" />
+	<cell x="7" y="6" state="*" />
+	<cell x="8" y="6" state="*" />
+	<cell x="9" y="6" state="*" />
+
+	<cell x="6" y="7" state="*" />
+	<cell x="7" y="7" state="*" />
+	<cell x="8" y="7" state="*" />
+	<cell x="9" y="7" state="*" />
+
+	<cell x="6" y="8" state="*" />
+	<cell x="7" y="8" state="*" />
+	<cell x="8" y="8" state="*" />
+	<cell x="9" y="8" state="*" />
+
+	<cell x="6" y="9" state="*" />
+	<cell x="7" y="9" state="*" />
+	<cell x="8" y="9" state="*" />
+	<cell x="9" y="9" state="*" />
+
+
+	<!-- "жижкость" -->
+	<cell x="2" y="10" state="a" />
+	<cell x="2" y="12" state="a" />
+	<cell x="4" y="13" state="a" />
+	<cell x="5" y="14" state="a" />
+	<cell x="10" y="2" state="a" />
+	<cell x="12" y="3" state="a" />
+	<cell x="14" y="3" state="a" />
+	<cell x="14" y="4" state="a" />
+
+
+
+</automaton>
+

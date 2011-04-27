@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<automaton width="100" height="100"> <!-- атрибуты можно опустить, по умолчанию 100x100 -->
+
+	<zerostate name="0" /> <!-- Должно быть объявлено перед <cell> -->
+	<state name="1" />
+
+	<!-- набор правил для диффузии -->
+	<rule oldstate="01" newstate="10" probability="0.33"/>
+	<rule oldstate="10" newstate="01" probability="0.33"/>
+	<rule oldstate="11" newstate="10" probability="0.33"/>
+<!--	<rule neighbourhood="00000001" new_neighbourhood="11111111" probability="0.5" /> -->
+	<!-- Атрибут probability можно опустить, вероятность по умолчанию 1 -->
+
+	<!-- TODO : добавить другие методы добавления клеток (целыми блоками) -->
+	<cell x="10" y="10" state="1" />
+	<cell x="11" y="10" state="1" />
+	<cell x="12" y="10" state="1" />
+	<cell x="20" y="20" state="1" />
+	<cell x="30" y="30" state="1" />
+	<cell x="40" y="40" state="1" />
+	<cell x="50" y="50" state="1" />
+	<cell x="11" y="11" state="1" />
+	<cell x="25" y="25" state="1" />
+	<cell x="35" y="35" state="1" />
+	<cell x="45" y="45" state="1" />
+	<cell x="55" y="55" state="1" />
+	<cell x="55" y="56" state="1" />
+	<!-- Атрибут state можно опустить, состояние по умолчанию - zerostate -->
+
+</automaton>
+
