@@ -58,11 +58,11 @@ void* open_renderer(Automaton* automaton, const char* filename)
 
 	/* Автоматически определить выходной формат по имени файла,
 	по умолчанию avi. */
-	fmt = av_guess_format(NULL, filename, NULL);
+	fmt = guess_stream_format(NULL, filename, NULL);
 	if(!fmt)
 	{
 		printf("Couldn't deduce output format from file extension: using AVI.\n");
-		fmt = av_guess_format("avi", NULL, NULL);
+		fmt = guess_stream_format("avi", NULL, NULL);
 	}
 	if(!fmt)
 	{
@@ -93,7 +93,7 @@ void* open_renderer(Automaton* automaton, const char* filename)
 		}
 		c = st->codec;
 		c->codec_id = fmt->video_codec;
-		c->codec_type = AVMEDIA_TYPE_VIDEO;
+		c->codec_type = CODEC_TYPE_VIDEO;
 		c->bit_rate = 400000;
 		c->width = width;
 		c->height = height;
@@ -141,7 +141,7 @@ void* open_renderer(Automaton* automaton, const char* filename)
 			return NULL;
 		}
 	}
-	if(avio_open(&oc->pb, filename, URL_WRONLY) < 0)
+	if(url_fopen(&oc->pb, filename, URL_WRONLY) < 0)
 	{
 		printf("Could not open '%s'\n", filename);
 		return NULL;
@@ -232,7 +232,7 @@ void render(void* renderer, Automaton* automaton)
 			pkt.pts = av_rescale_q(c->coded_frame->pts, c->time_base,
 				st->time_base);
 		if(c->coded_frame->key_frame)
-			pkt.flags |= AV_PKT_FLAG_KEY;
+			pkt.flags |= PKT_FLAG_KEY;
 		pkt.stream_index= st->index;
 		pkt.data= video_outbuf;
 		pkt.size= out_size;
@@ -272,7 +272,7 @@ void close_renderer(void* renderer)
 		av_freep(&oc->streams[i]->codec);
 		av_freep(&oc->streams[i]);
 	}
-	avio_close(oc->pb);
+	url_fclose(oc->pb);
 	av_free(oc);
 }
 
