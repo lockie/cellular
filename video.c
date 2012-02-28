@@ -3,6 +3,18 @@
 #include <libavformat/avio.h>
 #include <libswscale/swscale.h>
 
+#ifndef guess_stream_format
+# define guess_stream_format av_guess_format
+#endif  /* guess_stream_format */
+
+#ifndef CODEC_TYPE_VIDEO
+# define CODEC_TYPE_VIDEO AVMEDIA_TYPE_VIDEO
+#endif  /* CODEC_TYPE_VIDEO */
+
+#ifndef PKT_FLAG_KEY
+# define PKT_FLAG_KEY AV_PKT_FLAG_KEY
+#endif  /* PKT_FLAG_KEY */
+
 #include "automaton.h"
 
 
