@@ -15,9 +15,10 @@ int main(int argc, char** argv)
 	void* renderer;
 	int i;
 
-	if(argc != 3)
+	if(argc != 4)
 	{
-		printf("USAGE: %s <input automaton xmlfile> <output videofile>\n",
+		printf(
+"USAGE: %s <input automaton xmlfile> <output videofile> <tick count>\n",
 			argv[0]);
 		return EXIT_SUCCESS;
 	}
@@ -34,7 +35,7 @@ int main(int argc, char** argv)
 
 	/* Провести симуляцию */
 	srand(time(NULL));
-	for(i = 0; i < 500; i++)
+	for(i = 0; i < atoi(argv[3]); i++)
 	{
 		render(renderer, automaton);
 		tick(automaton);
