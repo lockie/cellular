@@ -11,6 +11,10 @@
 # define CODEC_TYPE_VIDEO AVMEDIA_TYPE_VIDEO
 #endif  /* CODEC_TYPE_VIDEO */
 
+#ifndef CODEC_TYPE_SUBTITLE
+# define CODEC_TYPE_SUBTITLE AVMEDIA_TYPE_SUBTITLE
+#endif  /* CODEC_TYPE_SUBTITLE */
+
 #ifndef PKT_FLAG_KEY
 # define PKT_FLAG_KEY AV_PKT_FLAG_KEY
 #endif  /* PKT_FLAG_KEY */
@@ -19,7 +23,7 @@
 
 
 #define CELL_SIZE  10
-#define FRAME_RATE 20
+#define FRAME_RATE 25  /* subtitle stream does not support FPS < 20 */
 
 #define OUTBUF_SIZE 200000
 static uint8_t* video_outbuf;
@@ -50,6 +54,7 @@ typedef struct
 {
 	AVFormatContext* oc;
 	AVStream* st;
+	AVStream* st_sub;
 	int frame_count;
 } Renderer;
 
@@ -58,9 +63,9 @@ void* open_renderer(Automaton* automaton, const char* filename)
 	Renderer* res;
 	AVOutputFormat* fmt;
 	AVFormatContext* oc;
-	AVCodecContext* c = NULL;
-	AVStream* st = NULL;
-	AVCodec* codec;
+	AVCodecContext *c = NULL, *c_sub = NULL;
+	AVStream *st = NULL, *st_sub = NULL;
+	AVCodec *codec, *codec_sub;
 	int height = automaton->height * CELL_SIZE;
 	int width  = automaton->width  * CELL_SIZE;
 	if(height % 2 != 0) height++; /* Размеры изображения должны быть */
@@ -116,6 +121,29 @@ void* open_renderer(Automaton* automaton, const char* filename)
 		if(oc->oformat->flags & AVFMT_GLOBALHEADER)
 			c->flags |= CODEC_FLAG_GLOBAL_HEADER;
 	}
+
+	/* Добавить субтитры */
+	st_sub = av_new_stream(oc, 0);
+	if(!st_sub)
+	{
+		printf("Could not alloc stream\n");
+		return NULL;
+	}
+	c_sub = st_sub->codec;
+	c_sub->codec_id = CODEC_ID_SRT;
+	c_sub->codec_type = CODEC_TYPE_SUBTITLE;
+	c_sub->time_base.den = FRAME_RATE;
+	c_sub->time_base.num = 1;
+	c_sub->width = width;
+	c_sub->height = height;
+	if(oc->oformat->flags & AVFMT_GLOBALHEADER)
+		c_sub->flags |= CODEC_FLAG_GLOBAL_HEADER;
+	if(ff_ass_subtitle_header_default(c_sub) < 0)
+	{
+		printf("Could not add subtitles!\n");
+		return NULL;
+	}
+
 	if(av_set_parameters(oc, NULL) < 0)
 	{
 		printf("Invalid output format parameters\n");
@@ -134,6 +162,19 @@ void* open_renderer(Automaton* automaton, const char* filename)
 		printf("Could not open codec\n");
 		return NULL;
 	}
+
+	codec_sub = avcodec_find_encoder(c_sub->codec_id);
+	if(!codec_sub)
+	{
+		printf("Subtitles codec not found\n");
+		return NULL;
+	}
+	if(avcodec_open(c_sub, codec_sub) < 0)
+	{
+		printf("Could not open subtitles codec\n");
+		return NULL;
+	}
+
 	video_outbuf = NULL;
 	if(!(oc->oformat->flags & AVFMT_RAWPICTURE))
 		video_outbuf = av_malloc(OUTBUF_SIZE);
@@ -159,11 +200,16 @@ void* open_renderer(Automaton* automaton, const char* filename)
 		return NULL;
 	}
 
-	av_write_header(oc);
+	if(av_write_header(oc) != 0)
+	{
+		printf("Unable to write header\n");
+		return NULL;
+	}
 
 	res = (Renderer*)malloc(sizeof(Renderer));
 	res->oc = oc;
 	res->st = st;
+	res->st_sub = st_sub;
 	res->frame_count = 0;
 	return res;
 }
@@ -204,7 +250,13 @@ static void fill_yuv_image(AVFrame* pict, Automaton* automaton)
 		}
 }
 
-void render(void* renderer, Automaton* automaton)
+#define SUB_BUFFER_SIZE 16536
+static unsigned char sub_buffer[SUB_BUFFER_SIZE];
+
+#define SUB_STR_LEN 1024
+static char sub_str[SUB_STR_LEN];
+
+void render(void* renderer, Automaton* automaton, const char* text)
 {
 	Renderer* r = renderer;
 	AVFormatContext* oc = r->oc;
@@ -212,6 +264,7 @@ void render(void* renderer, Automaton* automaton)
 	int out_size, ret;
 	AVCodecContext *c = st->codec;
 	static struct SwsContext* img_convert_ctx;
+	AVSubtitle sub;
 
 	if(c->pix_fmt != PIX_FMT_YUV420P)
 	{
@@ -258,6 +311,43 @@ void render(void* renderer, Automaton* automaton)
 		printf("Error writing video frame\n");
 		return;
 	}
+
+	snprintf(sub_str, SUB_STR_LEN, "Frame %d", r->frame_count);
+	memset(&sub, 0, sizeof(sub));
+	if(text)
+	{
+		strcat(sub_str, "  ");
+		strncat(sub_str, text, SUB_STR_LEN - strlen(sub_str));
+	}
+	if(ff_ass_add_rect(&sub, sub_str, 100 * r->frame_count / FRAME_RATE,
+		4 + 100 * r->frame_count / FRAME_RATE, 0) <= 0)
+	{
+		printf("Unable to render subtitle\n");
+	} else
+	{
+		ret = avcodec_encode_subtitle(r->st_sub->codec, &sub_buffer[0],
+			SUB_BUFFER_SIZE, &sub);
+		if(ret < 0)
+		{
+			printf("Unable to encode subtitle\n");
+		} else {
+			AVPacket pkt;
+			av_init_packet(&pkt);
+			pkt.stream_index = r->st_sub->index;
+			if(c->coded_frame->pts != AV_NOPTS_VALUE)
+				pkt.pts = av_rescale_q(c->coded_frame->pts, c->time_base,
+					st->time_base);
+			if(c->coded_frame->key_frame)
+				pkt.flags |= PKT_FLAG_KEY;
+			pkt.data = sub_buffer;
+			pkt.size = ret;
+			if(av_interleaved_write_frame(oc, &pkt) < 0)
+			{
+				printf("Unable to write subtitle frame\n");
+			}
+		}
+	}
+
 	r->frame_count++;
 }
 

@@ -15,10 +15,10 @@ int main(int argc, char** argv)
 	void* renderer;
 	int i;
 
-	if(argc != 4)
+	if(argc != 4 && argc != 5)
 	{
 		printf(
-"USAGE: %s <input automaton xmlfile> <output videofile> <tick count>\n",
+"USAGE: %s <input automaton xmlfile> <output videofile> <tick count> [watermark]\n",
 			argv[0]);
 		return EXIT_SUCCESS;
 	}
@@ -37,7 +37,7 @@ int main(int argc, char** argv)
 	srand(time(NULL));
 	for(i = 0; i < atoi(argv[3]); i++)
 	{
-		render(renderer, automaton);
+		render(renderer, automaton, argc == 5 ? argv[4] : NULL);
 		tick(automaton);
 	}
 
