@@ -10,7 +10,7 @@ struct Rule
 	char *oldstate, *newstate;
 
 	/** Вероятность применения правила **/
-	double probability;
+	double probability, p;
 
 	/** Указатель на следующее правило в списке (NULL, если последнее) **/
 	struct Rule* next;
@@ -65,6 +65,13 @@ struct Automaton
  *   @return автомат
 **/
 extern struct Automaton* load_automaton(const char* filename);
+
+/** Запись клеточного автомата в файл
+ *   @param a автомат
+ *   @param filename имя файла
+ *   @return число >=0, если всё прошло хорошо, и <0, если случилась беда
+**/
+extern int save_automaton(struct Automaton* a, const char* filename);
 
 /** Освобождение ресурсов, занятых автоматом
  *   @param a адрес клеточного автомата для удаления

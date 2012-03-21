@@ -355,8 +355,13 @@ void close_renderer(void* renderer)
 {
 	unsigned int i;
 	Renderer* r = renderer;
-	AVFormatContext* oc = r->oc;
-	AVStream* st = r->st;
+	AVFormatContext* oc;
+	AVStream* st;
+
+	if(!r)
+		return;
+
+	oc = r->oc; st = r->st;
 
 	av_write_trailer(oc);
 

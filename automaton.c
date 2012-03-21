@@ -4,6 +4,7 @@
 #include <math.h>
 
 #include <libxml/parser.h>
+#include <libxml/xmlwriter.h>
 
 #include "automaton.h"
 
@@ -152,6 +153,7 @@ struct Automaton* load_automaton(const char* filename)
 				rule->probability = p;
 			}
 			xmlFree(str);
+			rule->p = p;
 
 			/* Добавить в список правил */
 			rule->next = NULL;
@@ -196,6 +198,121 @@ struct Automaton* load_automaton(const char* filename)
 	}
 
 	return automaton;
+}
+
+int save_automaton(struct Automaton* a, const char* filename)
+{
+	int i, j;
+	struct Rule* rule;
+	xmlDocPtr doc;
+	xmlTextWriterPtr writer;
+	int rc = 0;
+
+	/* Проинициализировать libxml и проверить на возможные несовпадения ABI */
+	LIBXML_TEST_VERSION
+
+	writer = xmlNewTextWriterDoc(&doc, 0);
+	if(!writer)
+		return -1;
+	rc = xmlTextWriterStartDocument(writer, NULL, "UTF-8", NULL);
+	if(rc < 0)
+		goto cleanup;
+	/* <automaton> */
+	rc = xmlTextWriterStartElement(writer, BAD_CAST"automaton"); /* плохой, негодный тайпкаст */
+	if(rc < 0)
+		goto cleanup;
+	rc = xmlTextWriterWriteFormatAttribute(writer, BAD_CAST"width", "%d", a->width);
+	if(rc < 0)
+		goto cleanup;
+	rc = xmlTextWriterWriteFormatAttribute(writer, BAD_CAST"height", "%d", a->height);
+	if(rc < 0)
+		goto cleanup;
+	rc = xmlTextWriterWriteFormatAttribute(writer, BAD_CAST"omega", "%f", a->omega);
+	if(rc < 0)
+		goto cleanup;
+
+	/*		<zerostate>*/
+	rc = xmlTextWriterStartElement(writer, BAD_CAST"zerostate");
+	if(rc < 0)
+		goto cleanup;
+	rc = xmlTextWriterWriteFormatAttribute(writer, BAD_CAST"name", "%c", a->zerostate);
+	if(rc < 0)
+		goto cleanup;
+	rc = xmlTextWriterEndElement(writer);
+	if(rc < 0)
+		goto cleanup;
+	/*		</zerostate>*/
+
+	/*		<state>'s*/
+	for(i = 0; i < a->nstates; i++)
+	{
+		rc = xmlTextWriterStartElement(writer, BAD_CAST"state");
+		if(rc < 0)
+			goto cleanup;
+		rc = xmlTextWriterWriteFormatAttribute(writer, BAD_CAST"name", "%c", a->states[i]);
+		if(rc < 0)
+			goto cleanup;
+		rc = xmlTextWriterEndElement(writer);
+		if(rc < 0)
+			goto cleanup;
+	}
+	/*		</state>*/
+
+	/*		<rule>'s*/
+	rule = a->rules;
+	while(rule)
+	{
+		rc = xmlTextWriterStartElement(writer, BAD_CAST"rule");
+		if(rc < 0)
+			goto cleanup;
+		rc = xmlTextWriterWriteFormatAttribute(writer, BAD_CAST"oldstate", "%s", rule->oldstate);
+		if(rc < 0)
+			goto cleanup;
+		rc = xmlTextWriterWriteFormatAttribute(writer, BAD_CAST"newstate", "%s", rule->newstate);
+		if(rc < 0)
+			goto cleanup;
+		rc = xmlTextWriterWriteFormatAttribute(writer, BAD_CAST"probability", "%f", rule->p);
+		if(rc < 0)
+			goto cleanup;
+		rc = xmlTextWriterEndElement(writer);
+		if(rc < 0)
+			goto cleanup;
+		rule = rule->next;
+	}
+	/*		</rule>*/
+
+	/*		<cell>'s*/
+	for(i = 0; i < a->height; i++)
+		for(j = 0; j < a->width; j++)
+			if(CELL(a, j, i) != a->zerostate)
+			{
+				rc = xmlTextWriterStartElement(writer, BAD_CAST"cell");
+				if(rc < 0)
+					goto cleanup;
+				rc = xmlTextWriterWriteFormatAttribute(writer, BAD_CAST"x", "%d", j);
+				if(rc < 0)
+					goto cleanup;
+				rc = xmlTextWriterWriteFormatAttribute(writer, BAD_CAST"y", "%d", i);
+				if(rc < 0)
+					goto cleanup;
+				rc = xmlTextWriterWriteFormatAttribute(writer, BAD_CAST"state", "%c", CELL(a, j, i));
+				if(rc < 0)
+					goto cleanup;
+				rc = xmlTextWriterEndElement(writer);
+				if(rc < 0)
+					goto cleanup;
+			}
+	/*		</cell>*/
+
+	rc = xmlTextWriterEndDocument(writer);
+	/* </automaton> */
+
+cleanup:
+	xmlFreeTextWriter(writer);
+	if(rc >= 0)
+		xmlSaveFileEnc(filename, doc, "UTF-8");
+	xmlFreeDoc(doc);
+	return rc;
 }
 
 static char* newlattice = NULL;

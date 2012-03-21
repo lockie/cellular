@@ -8,10 +8,11 @@
 #include "video.h"
 
 
-static const char* opt_string = "i:o:s:w:vh?";
+static const char* opt_string = "i:o:cs:w:vh?";
 static const struct option long_opts[] = {
 	{ "infile", 	required_argument,	NULL,	'i' },
 	{ "outfile",	required_argument,	NULL,	'o' },
+	{ "characters",	no_argument,		NULL,	'c' },
 	{ "steps", 		required_argument,	NULL,	's' },
 	{ "watermark",	required_argument,	NULL,	'w' },
 	{ "verbose",	no_argument,		NULL,	'v' },
@@ -26,8 +27,8 @@ void display_usage(const char*);
 int main(int argc, char** argv)
 {
 	struct Automaton* automaton;
-	void* renderer;
-	int i, verbose = 0, idx = 0;
+	void* renderer = NULL;
+	int i, verbose = 0, idx = 0, characters = 0;
 	const char *infile = NULL, *outfile = NULL, *watermark = NULL;
 	int steps = 0;
 
@@ -42,6 +43,9 @@ int main(int argc, char** argv)
 				break;
 			case 'o':
 				outfile = optarg;
+				break;
+			case 'c':
+				characters = 1;
 				break;
 			case 's':
 				steps = atoi(optarg);
@@ -74,6 +78,11 @@ int main(int argc, char** argv)
 	}
 	if(steps == 0)
 		steps = 100;
+	if(watermark && characters)
+	{
+		printf("--watermark option is incompatible with --characters\n");
+		return EXIT_SUCCESS;
+	}
 
 	/* Загрузить автомат */
 	automaton = load_automaton(infile);
@@ -81,19 +90,26 @@ int main(int argc, char** argv)
 		return EXIT_FAILURE;
 
 	/* Открыть выходной файл */
-	renderer = open_renderer(automaton, outfile);
-	if(!renderer)
-		return EXIT_FAILURE;
+	if(!characters)
+	{
+		renderer = open_renderer(automaton, outfile);
+		if(!renderer)
+			return EXIT_FAILURE;
+	}
 
 	/* Провести симуляцию */
 	srand(time(NULL));
 	for(i = 0; i < steps; i++)
 	{
-		render(renderer, automaton, watermark);
+		if(!characters)
+			render(renderer, automaton, watermark);
 		tick(automaton);
 		if(verbose)
 			printf("Tick %4d/%d\r", automaton->ticks, steps);
 	}
+
+	if(characters)
+		save_automaton(automaton, outfile);
 
 	/* Прибраться */
 	close_renderer(renderer);
@@ -106,7 +122,8 @@ void display_usage(const char* progname)
 	printf("USAGE: %s [options]\n", progname);
 	printf("Options:\n");
 	printf("\t-i, --infile=<file>\tInput file (cellular automaton in XML format)\n");
-	printf("\t-o, --outfile=<file>\tOutput file (video in mkv container)\n");
+	printf("\t-o, --outfile=<file>\tOutput file (video in mkv container/automaton in XML)\n");
+	printf("\t-c, --characters\tWrite final state of cellular automaton in XML format instead of video\n");
 	printf("\t-s, --steps=<number>\tNumber of simulation steps (defaults to 100)\n");
 	printf("\t-w, --watermark=<text>\tWatermark printed as a subtitle on each video frame\n");
 	printf("\t-v, --verbose\t\tBe verbose (show fancy progressbar)\n");
