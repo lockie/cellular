@@ -237,7 +237,7 @@ static void fill_yuv_image(AVFrame* pict, struct Automaton* automaton)
 
 			for(k = 0; k < n; k++)
 			{
-				if(automaton->lattice[i][j] == automaton->states[k])
+				if(CELL(automaton, j, i) == automaton->states[k])
 				{
 					U = palette[2*k    ];
 					V = palette[2*k + 1];

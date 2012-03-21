@@ -10,7 +10,6 @@
 
 struct Automaton* load_automaton(const char* filename)
 {
-	int i;
 	xmlDoc* doc;
 	xmlNode *root, *node;
 	xmlChar* str;
@@ -63,9 +62,8 @@ struct Automaton* load_automaton(const char* filename)
 	xmlFree(str);
 
 	/* Создать поле */
-	automaton->lattice = (char**)malloc(automaton->height * sizeof(char*));
-	for(i = 0; i < automaton->height; i++)
-		automaton->lattice[i] = (char*)malloc(automaton->width * sizeof(char));
+	automaton->size = automaton->height * automaton->width;
+	automaton->lattice = (char*)malloc(automaton->size);
 
 	/* Загрузить состояния, правила и клетки автомата */
 	for(node = root->children; node != root->last; node = node->next)
@@ -78,9 +76,7 @@ struct Automaton* load_automaton(const char* filename)
 			automaton->zerostate = str[0];
 			xmlFree(str);
 			/* Заполнить поле нулевым состоянием */
-			for(i = 0; i < automaton->height; i++)
-				memset(automaton->lattice[i], automaton->zerostate,
-					automaton->width);
+			memset(automaton->lattice, automaton->zerostate, automaton->size);
 		}
 		else if(xmlStrcmp(node->name, (xmlChar*)"state") == 0) /* Обычное состояние */
 		{
@@ -88,7 +84,7 @@ struct Automaton* load_automaton(const char* filename)
 			if(!str)
 			{
 				automaton->states[automaton->nstates] =
-					automaton->nstates + 48; /* ASCII HACK */
+					automaton->nstates + 47; /* ASCII HACK */
 				automaton->nstates++;
 			}
 			else
@@ -170,18 +166,32 @@ struct Automaton* load_automaton(const char* filename)
 
 			str = xmlGetProp(node, (xmlChar*)"state");
 			if(!str)
-				automaton->lattice[y][x] = automaton->zerostate;
+				CELL(automaton, x, y) = automaton->zerostate;
 			else
-				automaton->lattice[y][x] = str[0];
+				CELL(automaton, x, y) = str[0];
 			xmlFree(str);
 		}
 	}
+
+	/* Найти максимальную длину правила */
+	automaton->maxlength = 0;
+	rule = automaton->rules;
+	while(rule)
+	{
+		if(automaton->maxlength < strlen(rule->oldstate))
+			automaton->maxlength = strlen(rule->oldstate);
+
+		rule = rule->next;
+	}
+
 	return automaton;
 }
 
+static char* newlattice = NULL;
+static size_t newlattice_size = 0;
+
 void delete_automaton(struct Automaton** a)
 {
-	int i;
 	struct Rule *r, *rnext = NULL;
 
 	struct Automaton* automaton = *a;
@@ -197,11 +207,12 @@ void delete_automaton(struct Automaton** a)
 	}
 
 	/* Удалить поле */
-	for(i = 0; i < automaton->height; i++)
-		free(automaton->lattice[i]);
 	free(automaton->lattice);
-
 	free(automaton);
+
+	/* На всякий случай удалить временный буфер */
+	if(newlattice_size != 0)
+		free(newlattice);
 }
 
 void tick(struct Automaton* automaton)
@@ -211,8 +222,7 @@ void tick(struct Automaton* automaton)
 	double rnd;
 	struct Rule *next, *curr;
 
-	char** newlattice;
-	size_t len, maxlen = 0;
+	size_t len;
 	int will_apply;
 
 	printf("Tick %d\n", automaton->ticks++);
@@ -220,25 +230,14 @@ void tick(struct Automaton* automaton)
 	if(!automaton->rules)
 		return;
 
-	/* Найти максимальную длину правила. TODO : инвариант */
-	curr = automaton->rules;
-	for(;;)
+	/* Создать новое поле, если нужно */
+	if(newlattice_size < automaton->size)
 	{
-		if(maxlen < strlen(curr->oldstate))
-			maxlen = strlen(curr->oldstate);
-
-		curr = curr->next;
-		if(!curr)
-			break;
+		if(newlattice)
+			free(newlattice);
+		newlattice = (char*)malloc(newlattice_size = automaton->size);
 	}
-
-	/* Создать новое поле */
-	newlattice = (char**)malloc(automaton->height * sizeof(char*));
-	for(i = 0; i < automaton->height; i++)
-	{
-		newlattice[i] = (char*)malloc(automaton->width * sizeof(char));
-		memcpy(newlattice[i], automaton->lattice[i], automaton->width);
-	}
+	memcpy(newlattice, automaton->lattice, automaton->size);
 
 	if(rand() > RAND_MAX / 2)
 	{
@@ -265,7 +264,7 @@ void tick(struct Automaton* automaton)
 					{
 						will_apply = 1;
 						for(m = 0; m < len; m++)
-							if(curr->oldstate[m] != automaton->lattice[i][j+m])
+							if(curr->oldstate[m] != CELL(automaton, j+m, i))
 							{
 								will_apply = 0;
 								break;
@@ -279,7 +278,8 @@ void tick(struct Automaton* automaton)
 							{
 								/* ...и применить его. */
 								for(n = 0; n < len; n++)
-									newlattice[i][j+n] = curr->newstate[n];
+									newlattice[i*automaton->width+j+n] =
+										curr->newstate[n];
 								break;
 							}
 						}
@@ -316,7 +316,7 @@ void tick(struct Automaton* automaton)
 					{
 						will_apply = 1;
 						for(m = 0; m < len; m++)
-							if(curr->oldstate[m] != automaton->lattice[i+m][j])
+							if(curr->oldstate[m] != CELL(automaton, j, i+m))
 							{
 								will_apply = 0;
 								break;
@@ -330,7 +330,8 @@ void tick(struct Automaton* automaton)
 							{
 								/* ...и применить его. */
 								for(n = 0; n < len; n++)
-									newlattice[i+n][j] = curr->newstate[n];
+									newlattice[(i+n)*automaton->width+j] =
+										curr->newstate[n];
 								break;
 							}
 						}
@@ -345,9 +346,6 @@ void tick(struct Automaton* automaton)
 	}
 
 	/* Новое поле */
-	for(i = 0; i < automaton->height; i++)
-		free(automaton->lattice[i]);
-	free(automaton->lattice);
-	automaton->lattice = newlattice;
+	memcpy(automaton->lattice, newlattice, automaton->size);
 }
 

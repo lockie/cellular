@@ -16,12 +16,19 @@ struct Rule
 	struct Rule* next;
 };
 
+/** Макрос для доступа к клетке с заданным индексом
+ **/
+#define CELL(automaton, x, y) automaton->lattice[(y)*automaton->width+x]
+
 /** Клеточный автомат (двумерный, недетерминированный)
 **/
 struct Automaton
 {
 	/** Высота и ширина поля **/
 	int width, height;
+
+	/** Размер поля в байтах **/
+	size_t size;
 
 	/** Число состояний (без нулевого) **/
 	int nstates;
@@ -42,8 +49,11 @@ struct Automaton
 	/** Правила **/
 	struct Rule* rules;
 
+	/** Максимальная длина правила **/
+	size_t maxlength;
+
 	/** Поле **/
-	char** lattice;
+	char* lattice;
 
 	/** Количество прошедших квантов времени **/
 	int ticks;
