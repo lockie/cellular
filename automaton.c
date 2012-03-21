@@ -68,7 +68,7 @@ struct Automaton* load_automaton(const char* filename)
 	automaton->lattice = (char*)malloc(automaton->size);
 
 	/* Загрузить состояния, правила и клетки автомата */
-	for(node = root->children; node != root->last; node = node->next)
+	for(node = root->children; node != NULL; node = node->next)
 	{
 		if(xmlStrcmp(node->name, (xmlChar*)"zerostate") == 0) /* Нулевое состояние */
 		{
