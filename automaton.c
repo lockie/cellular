@@ -111,8 +111,13 @@ struct Automaton* load_automaton(const char* filename)
 			rule->newstate = (char*)malloc(xmlStrlen(str));
 			strcpy(rule->newstate, (char*)str);
 			xmlFree(str);
-			/* TODO : диагностику на предмет того, имеют ли состояния
-			одну и ту же длину*/
+
+			if(strlen(rule->oldstate) != strlen(rule->newstate))
+			{
+				printf("Invalid rule \"%s->%s\": lenghts differ; skipping\n",
+					rule->oldstate, rule->newstate);
+				continue;
+			}
 
 			/* Вероятность, по умолчанию 1 */
 			str = xmlGetProp(node, (xmlChar*)"probability");
@@ -135,8 +140,14 @@ struct Automaton* load_automaton(const char* filename)
 			if(similar_rule)
 			{
 				rule->probability = similar_rule->probability + p;
-				/* TODO : диагностику на предмет того, что суммарная вероятность
-				/  нескольких правил с одинаковыми левыми частями больше 1 */
+				if(rule->probability > 1.0)
+				{
+					printf("Total probability for rules starting with state\
+\"%s\" %f>1, skipping rule \"%s->%s\"\n",
+						rule->oldstate, rule->probability,
+						rule->oldstate, rule->newstate);
+					continue;
+				}
 			} else {
 				rule->probability = p;
 			}
