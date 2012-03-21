@@ -14,7 +14,8 @@ struct Automaton* load_automaton(const char* filename)
 	xmlDoc* doc;
 	xmlNode *root, *node;
 	xmlChar* str;
-	int x, y;
+	char c;
+	int x, y, w, h, i, j;
 	double p;
 	struct Rule *rule = NULL, *last_rule = NULL, *tmprule = NULL, *similar_rule;
 	struct Automaton* automaton =
@@ -183,6 +184,57 @@ struct Automaton* load_automaton(const char* filename)
 			else
 				CELL(automaton, x, y) = str[0];
 			xmlFree(str);
+		}
+		else if(xmlStrcmp(node->name, (xmlChar*)"box") == 0) /* Прямоугольник из клеток */
+		{
+			str = xmlGetProp(node, (xmlChar*)"x");
+			if(!str)
+				continue;
+			x = atoi((char*)str);
+			xmlFree(str);
+
+			str = xmlGetProp(node, (xmlChar*)"y");
+			if(!str)
+				continue;
+			y = atoi((char*)str);
+			xmlFree(str);
+
+			str = xmlGetProp(node, (xmlChar*)"width");
+			if(!str)
+				w = 1;
+			else
+				w = atoi((char*)str);
+			xmlFree(str);
+
+			str = xmlGetProp(node, (xmlChar*)"height");
+			if(!str)
+				h = 1;
+			else
+				h = atoi((char*)str);
+			xmlFree(str);
+
+			str = xmlGetProp(node, (xmlChar*)"probability");
+			if(!str)
+				p = 1;
+			else
+				p = atof((char*)str);
+
+			str = xmlGetProp(node, (xmlChar*)"state");
+			if(!str)
+				c = automaton->zerostate;
+			else
+				c = str[0];
+			xmlFree(str);
+
+			if(y+h > automaton->height)
+				h = automaton->height - y;
+			if(x+w > automaton->width)
+				w = automaton->width - x;
+
+			for(i = y; i < y+h; i++)
+				for(j = x; j < x+w; j++)
+					if((double)rand() / RAND_MAX < p)
+						CELL(automaton, j, i) = c;
 		}
 	}
 
