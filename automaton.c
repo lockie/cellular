@@ -70,7 +70,7 @@ struct Automaton* load_automaton(const char* filename)
 	/* Загрузить состояния, правила и клетки автомата */
 	for(node = root->children; node != root->last; node = node->next)
 	{
-		if(strcmp((char*)node->name, "zerostate") == 0) /* Нулевое состояние */
+		if(xmlStrcmp(node->name, (xmlChar*)"zerostate") == 0) /* Нулевое состояние */
 		{
 			str = xmlGetProp(node, (xmlChar*)"name");
 			if(!str)
@@ -82,29 +82,29 @@ struct Automaton* load_automaton(const char* filename)
 				memset(automaton->lattice[i], automaton->zerostate,
 					automaton->width);
 		}
-		else if(strcmp((char*)node->name, "state") == 0) /* Обычное состояние */
+		else if(xmlStrcmp(node->name, (xmlChar*)"state") == 0) /* Обычное состояние */
 		{
 			str = xmlGetProp(node, (xmlChar*)"name");
 			if(!str)
-				automaton->states[automaton->nstates++] =
-					automaton->nstates + 47; /* ASCII HACK */
+			{
+				automaton->states[automaton->nstates] =
+					automaton->nstates + 48; /* ASCII HACK */
+				automaton->nstates++;
+			}
 			else
 				automaton->states[automaton->nstates++] =
 					str[0];
 			xmlFree(str);
 		}
-		else if(strcmp((char*)node->name, "rule") == 0) /* Правило */
+		else if(xmlStrcmp(node->name, (xmlChar*)"rule") == 0) /* Правило */
 		{
 			rule = (struct Rule*)malloc(sizeof(struct Rule));
-
-			/* TODO : с рюсске буквами почти по любому не будет работать,
-			переделать на xmlChar */
 
 			/* Состояние на текущем шаге */
 			str = xmlGetProp(node, (xmlChar*)"oldstate");
 			if(!str)
 				continue;
-			rule->oldstate = (char*)malloc(strlen((char*)str));
+			rule->oldstate = (char*)malloc(xmlStrlen(str));
 			strcpy(rule->oldstate, (char*)str);
 			xmlFree(str);
 
@@ -112,7 +112,7 @@ struct Automaton* load_automaton(const char* filename)
 			str = xmlGetProp(node, (xmlChar*)"newstate");
 			if(!str)
 				continue;
-			rule->newstate = (char*)malloc(strlen((char*)str));
+			rule->newstate = (char*)malloc(xmlStrlen(str));
 			strcpy(rule->newstate, (char*)str);
 			xmlFree(str);
 			/* TODO : диагностику на предмет того, имеют ли состояния
@@ -154,7 +154,7 @@ struct Automaton* load_automaton(const char* filename)
 				automaton->rules = rule;
 			last_rule = rule;
 		}
-		else if(strcmp((char*)node->name, "cell") == 0) /* Клетка */
+		else if(xmlStrcmp(node->name, (xmlChar*)"cell") == 0) /* Клетка */
 		{
 			str = xmlGetProp(node, (xmlChar*)"x");
 			if(!str)
