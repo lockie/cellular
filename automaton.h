@@ -6,17 +6,6 @@
 **/
 struct Rule
 {
-#if 0
-	/** Максимальный размер окружения для данной размерности пространства **/
-	#define NEIGHBOURHOOD_SIZE 8
-
-	/** Соседи на текущем шаге**/
-	char curr_neighbourhood[NEIGHBOURHOOD_SIZE];
-
-	/** Соседи на следующем шаге**/
-	char new_neighbourhood[NEIGHBOURHOOD_SIZE];
-#endif  /* 0 */
-
 	/** Цепочка до и после подстановки **/
 	char *oldstate, *newstate;
 

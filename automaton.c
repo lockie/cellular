@@ -117,22 +117,6 @@ Automaton* load_automaton(const char* filename)
 			/* TODO : диагностику на предмет того, имеют ли состояния
 			одну и ту же длину*/
 
-#if 0
-			/* Окружение на текущем шаге */
-			str = xmlGetProp(node, (xmlChar*)"neighbourhood");
-			if(!str)
-				continue;
-			strncpy(rule->curr_neighbourhood, (char*)str, NEIGHBOURHOOD_SIZE);
-			xmlFree(str);
-
-			/* Окружение на следующем шаге */
-			str = xmlGetProp(node, (xmlChar*)"new_neighbourhood");
-			if(!str)
-				continue;
-			strncpy(rule->new_neighbourhood, (char*)str, NEIGHBOURHOOD_SIZE);
-			xmlFree(str);
-#endif  /* 0 */
-
 			/* Вероятность, по умолчанию 1 */
 			str = xmlGetProp(node, (xmlChar*)"probability");
 			if(!str)
@@ -234,57 +218,6 @@ void tick(Automaton* automaton)
 
 	if(!automaton->rules)
 		return;
-
-#if 0
-	/* Проехаться по всему полю квадратами 3x3 */
-	for(i = 1; i < automaton->height; i += 3)
-		for(j = 1; j < automaton->width; j += 3)
-		{
-			/* В каждом квадрате 3x3 выбрать правило для применения,
-			исходя из вероятности */
-			rnd = (double)rand() / RAND_MAX;
-			curr = automaton->rules;
-			for(;;)
-			{
-				next = curr->next;
-				if(!next)
-					break;
-				if(rnd > curr->probability && rnd < next->probability)
-					break;
-				curr = next;
-			}
-
-			/* Применить выбранное правило */
-			/* Проверить, подходит ли оно */
-			k = 0;
-			match = 1;
-			for(n = -1; n < 2; n++)
-				for(m = -1; m < 2; m++)
-				{
-					if(n == 0 && m == 0)
-						continue; /* TODO : а нужно ли пропускать саму клетку?*/
-					if(automaton->lattice[i+n][j+m] !=
-						curr->curr_neighbourhood[k++])
-					{
-						match = 0;
-						break;
-					}
-				}
-			if(!match)
-				continue;
-
-			/* Применить */
-			k = 0;
-			for(n = -1; n < 2; n++)
-				for(m = -1; m < 2; m++)
-				{
-					if(n == 0 && m == 0)
-						continue;
-					automaton->lattice[i+n][j+m] = curr->new_neighbourhood[k++];
-				}
-			printf("Rule applied\n");
-		}
-#endif /* 0 */
 
 	/* Найти максимальную длину правила. TODO : инвариант */
 	curr = automaton->rules;
