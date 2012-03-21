@@ -11,7 +11,7 @@
 **/
 int main(int argc, char** argv)
 {
-	Automaton* automaton;
+	struct Automaton* automaton;
 	void* renderer;
 	int i;
 

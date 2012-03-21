@@ -20,6 +20,7 @@
 #endif  /* PKT_FLAG_KEY */
 
 #include "automaton.h"
+#include "video.h"
 
 
 #define CELL_SIZE  10
@@ -31,7 +32,6 @@ static AVFrame *picture, *tmp_picture;
 
 static AVFrame* alloc_picture(enum PixelFormat pix_fmt, int width, int height)
 {
-	AVFrame *picture;
 	uint8_t *picture_buf;
 	int size;
 
@@ -58,7 +58,7 @@ typedef struct
 	int frame_count;
 } Renderer;
 
-void* open_renderer(Automaton* automaton, const char* filename)
+void* open_renderer(struct Automaton* automaton, const char* filename)
 {
 	Renderer* res;
 	AVOutputFormat* fmt;
@@ -217,7 +217,7 @@ void* open_renderer(Automaton* automaton, const char* filename)
 static const int palette[14] = { 0, 0, -70, -100, 20, -80, 140, 180,
 	-80, 20, 80, -60, -140, 80};
 
-static void fill_yuv_image(AVFrame* pict, Automaton* automaton)
+static void fill_yuv_image(AVFrame* pict, struct Automaton* automaton)
 {
 	int x, y, k,
 		n = automaton->nstates < 7 ? automaton->nstates : 7;
@@ -256,7 +256,7 @@ static unsigned char sub_buffer[SUB_BUFFER_SIZE];
 #define SUB_STR_LEN 1024
 static char sub_str[SUB_STR_LEN];
 
-void render(void* renderer, Automaton* automaton, const char* text)
+void render(void* renderer, struct Automaton* automaton, const char* text)
 {
 	Renderer* r = renderer;
 	AVFormatContext* oc = r->oc;
@@ -282,8 +282,8 @@ void render(void* renderer, Automaton* automaton, const char* text)
 			}
 		}
 		fill_yuv_image(tmp_picture, automaton);
-		sws_scale(img_convert_ctx, tmp_picture->data, tmp_picture->linesize,
-			0, c->height, picture->data, picture->linesize);
+		sws_scale(img_convert_ctx, (const uint8_t* const*)tmp_picture->data,
+			tmp_picture->linesize, 0, c->height, picture->data, picture->linesize);
 	} else {
 		fill_yuv_image(picture, automaton);
 	}
@@ -293,7 +293,7 @@ void render(void* renderer, Automaton* automaton, const char* text)
 	{
 		AVPacket pkt;
 		av_init_packet(&pkt);
-		if(c->coded_frame->pts != AV_NOPTS_VALUE)
+		if(c->coded_frame->pts != (int64_t)AV_NOPTS_VALUE)
 			pkt.pts = av_rescale_q(c->coded_frame->pts, c->time_base,
 				st->time_base);
 		if(c->coded_frame->key_frame)
@@ -334,7 +334,7 @@ void render(void* renderer, Automaton* automaton, const char* text)
 			AVPacket pkt;
 			av_init_packet(&pkt);
 			pkt.stream_index = r->st_sub->index;
-			if(c->coded_frame->pts != AV_NOPTS_VALUE)
+			if(c->coded_frame->pts != (int64_t)AV_NOPTS_VALUE)
 				pkt.pts = av_rescale_q(c->coded_frame->pts, c->time_base,
 					st->time_base);
 			if(c->coded_frame->key_frame)
@@ -353,7 +353,7 @@ void render(void* renderer, Automaton* automaton, const char* text)
 
 void close_renderer(void* renderer)
 {
-	uint i;
+	unsigned int i;
 	Renderer* r = renderer;
 	AVFormatContext* oc = r->oc;
 	AVStream* st = r->st;

@@ -8,7 +8,7 @@
 #include "automaton.h"
 
 
-Automaton* load_automaton(const char* filename)
+struct Automaton* load_automaton(const char* filename)
 {
 	int i;
 	xmlDoc* doc;
@@ -17,10 +17,11 @@ Automaton* load_automaton(const char* filename)
 	int x, y;
 	double p;
 	struct Rule *rule = NULL, *last_rule = NULL, *tmprule = NULL, *similar_rule;
-	Automaton* automaton = (Automaton*)malloc(sizeof(Automaton));
+	struct Automaton* automaton =
+		(struct Automaton*)malloc(sizeof(struct Automaton));
 	if(!automaton)
 		return NULL;
-	memset(automaton, 0, sizeof(Automaton));
+	memset(automaton, 0, sizeof(struct Automaton));
 
 	/* Проинициализировать libxml и проверить на возможные несовпадения ABI */
 	LIBXML_TEST_VERSION
@@ -178,12 +179,12 @@ Automaton* load_automaton(const char* filename)
 	return automaton;
 }
 
-void delete_automaton(Automaton** a)
+void delete_automaton(struct Automaton** a)
 {
 	int i;
 	struct Rule *r, *rnext = NULL;
 
-	Automaton* automaton = *a;
+	struct Automaton* automaton = *a;
 	if(!automaton)
 		return;
 	*a = NULL;
@@ -203,7 +204,7 @@ void delete_automaton(Automaton** a)
 	free(automaton);
 }
 
-void tick(Automaton* automaton)
+void tick(struct Automaton* automaton)
 {
 	int i, j;
 	size_t m, n;

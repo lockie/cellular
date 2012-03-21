@@ -18,7 +18,7 @@ struct Rule
 
 /** Клеточный автомат (двумерный, недетерминированный)
 **/
-typedef struct
+struct Automaton
 {
 	/** Высота и ширина поля **/
 	int width, height;
@@ -47,25 +47,24 @@ typedef struct
 
 	/** Количество прошедших квантов времени **/
 	int ticks;
-
-} Automaton;
+};
 
 
 /** Загрузка клеточного автомата из файла
  *   @param filename имя файла
  *   @return автомат
 **/
-extern Automaton* load_automaton(const char* filename);
+extern struct Automaton* load_automaton(const char* filename);
 
 /** Освобождение ресурсов, занятых автоматом
  *   @param a адрес клеточного автомата для удаления
 **/
-extern void delete_automaton(Automaton** a);
+extern void delete_automaton(struct Automaton** a);
 
 /** Применение правил к клеткам автомата
  *   @param aвтомам
 **/
-extern void tick(Automaton* automaton);
+extern void tick(struct Automaton* automaton);
 
 
 #endif  /* _AUTOMATON_H_ */
