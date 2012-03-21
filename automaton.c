@@ -236,10 +236,10 @@ void tick(struct Automaton* automaton)
 	size_t len;
 	int will_apply;
 
-	printf("Tick %d\n", automaton->ticks++);
-
 	if(!automaton->rules)
 		return;
+
+	automaton->ticks++;
 
 	/* Создать новое поле, если нужно */
 	if(newlattice_size < automaton->size)
