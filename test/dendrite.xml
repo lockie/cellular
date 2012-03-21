@@ -8,6 +8,7 @@
 	<rule oldstate="a." newstate=".a" probability="0.8"/>
 	<rule oldstate=".a" newstate="a." probability="0.8"/>
 	<rule oldstate="ax" newstate="xx" probability="1"/>
+	<rule oldstate="xa" newstate="xx" probability="1"/>
 
 	<cell x="30" y="30" state="x" />
 	<cell x="31" y="30" state="x" />

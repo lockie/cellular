@@ -44,6 +44,9 @@ typedef struct
 	    итого максимум 62 состояния */
 	#define MAX_STATES 62
 
+	/** Параметр \omega **/
+	double omega;
+
 	/** Коды обычных состояний **/
 	char states[MAX_STATES];
 

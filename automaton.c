@@ -38,6 +38,13 @@ Automaton* load_automaton(const char* filename)
 	/* Получить свойства автомата */
 	root = xmlDocGetRootElement(doc);
 
+	/* Параметр \omega */
+	str = xmlGetProp(root, (xmlChar*)"omega");
+	if(!str)
+		automaton->omega = 0.5;
+	else
+		automaton->omega = atof((char*)str);
+
 	/* Ширина поля, по умолчанию 100 */
 	str = xmlGetProp(root, (xmlChar*)"width");
 	if(!str)
@@ -308,7 +315,9 @@ void tick(Automaton* automaton)
 			for(j = 0; j < automaton->width;)
 			{
 				/* ...для каждого "кирпичика" случайной длины...*/
-				len = 1 + rand() % maxlen;
+				len = 1;
+				while((double)rand() / RAND_MAX < automaton->omega)
+					len++;
 				if((int)len + j > automaton->width)
 					len = automaton->width - j;
 
@@ -357,7 +366,9 @@ void tick(Automaton* automaton)
 			for(i = 0; i < automaton->height;)
 			{
 				/* ...для каждого "кирпичика" случайной длины...*/
-				len = 1 + rand() % maxlen;
+				len = 1;
+				while((double)rand() / RAND_MAX < automaton->omega)
+					len++;
 				if((int)len + i > automaton->height)
 					len = automaton->height - i;
 
