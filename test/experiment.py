@@ -2,9 +2,9 @@
 # vim: set fileencoding=utf8 :
 
 
-# общий размер поля
 width  = 100
 height = 100
+# общий размер поля (>= 25x25)
 
 # параметр \omega модели КА
 omega  = 0.5
@@ -121,7 +121,7 @@ def create_automaton(p, q, r, x0, filename):
 	impulse.setAttribute("x", "11")
 	impulse.setAttribute("y", "11")
 	impulse.setAttribute("height", str(height-21))
-	impulse.setAttribute("width", str(width/2))
+	impulse.setAttribute("width", str(width/2 - 10))
 	impulse.setAttribute("probability", str(x0))
 	impulse.setAttribute("state", "x")
 	automaton.appendChild(impulse)
@@ -135,7 +135,7 @@ def count_concentration(filename):
 	count = 0
 	for node in dom.getElementsByTagName("cell"):
 		if node.getAttribute("state") == "x":
-			x = node.getAttribute("x")
+			x = int(node.getAttribute("x"))
 			if x > width / 2:
 				count += 1
 	return float(count) / ((width-20)*(height-20)/2)
@@ -162,7 +162,7 @@ def walk_q(p, r, x0):
 		for i in range(1, averaging):
 			points = map(lambda x, y: x+y, points, run_oneshot(p, q, r, x0))
 		points = map(lambda x: x/averaging, points)
-		plt.plot(range(1, time_steps), points, label="q="+str(q))
+		plt.plot([t*dsteps for t in range(1, time_steps)], points, label="q="+str(q))
 
 
 def walk_p(r, x0):
