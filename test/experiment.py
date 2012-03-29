@@ -221,9 +221,23 @@ def walk_p(r, x0):
 		plt.savefig("p="+str(p)+".png")
 
 
+def walk_x(p, q, r):
+	for x0 in numpy.arange(0, 1.01, 0.2):
+		points = [0 for i in range(1, time_steps)]
+		for i in range(0, averaging):
+			points = map(lambda x, y: x+y, points, run_oneshot(p, q, r, x0))
+		points = map(lambda x: x/averaging, points)
+		plt.plot([t*dsteps for t in range(1, time_steps)], points, label="$x_0="+str(x0)+"$")
+	plt.title("$p="+str(p)+"\; q="+str(q)+"\; r="+str(r)+"$")
+	plt.xlabel("$t$")
+	plt.ylabel("$x$")
+	plt.legend(loc='upper left', frameon=False)
+	plt.savefig("1.png")
+
+
 def main():
 	t0 = time.clock()
-	walk_p(r, x0)
+	walk_x(0.25, 0.05, 0.8)
 	print "Processing took", time.clock() - t0, "s"
 	return 0
 
