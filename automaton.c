@@ -15,7 +15,7 @@ struct Automaton* load_automaton(const char* filename)
 	xmlNode *root, *node;
 	xmlChar* str;
 	char c;
-	int x, y, w, h, i, j;
+	int x, y, w, h, i, j, r;
 	double p;
 	struct Rule *rule = NULL, *last_rule = NULL, *tmprule = NULL, *similar_rule;
 	struct Automaton* automaton =
@@ -235,6 +235,48 @@ struct Automaton* load_automaton(const char* filename)
 				for(j = x; j < x+w; j++)
 					if((double)rand() / RAND_MAX < p)
 						CELL(automaton, j, i) = c;
+		}
+		else if(xmlStrcmp(node->name, (xmlChar*)"circle") == 0) /* Круг из клеток */
+		{
+			str = xmlGetProp(node, (xmlChar*)"x");
+			if(!str)
+				continue;
+			x = atoi((char*)str);
+			xmlFree(str);
+
+			str = xmlGetProp(node, (xmlChar*)"y");
+			if(!str)
+				continue;
+			y = atoi((char*)str);
+			xmlFree(str);
+
+			str = xmlGetProp(node, (xmlChar*)"radius");
+			if(!str)
+				continue;
+			r = atoi((char*)str);
+			xmlFree(str);
+
+			str = xmlGetProp(node, (xmlChar*)"probability");
+			if(!str)
+				p = 1;
+			else
+				p = atof((char*)str);
+
+			str = xmlGetProp(node, (xmlChar*)"state");
+			if(!str)
+				c = automaton->zerostate;
+			else
+				c = str[0];
+			xmlFree(str);
+
+			for(i=-r; i<=r; i++)
+				for(j=-r; j<=r; j++)
+					if(i*i+j*j <= r*r)  /* попадаем в круг? */
+						if(j+x >= 0 && i+y >=0 &&
+						 j+x < automaton->width &&
+						 i+y < automaton->height)  /* попадаем в поле? */
+							if((double)rand() / RAND_MAX < p) /* вер-ть */
+								CELL(automaton, j+x, i+y) = c;
 		}
 	}
 
