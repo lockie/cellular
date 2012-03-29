@@ -36,6 +36,45 @@ import numpy
 import matplotlib.pyplot as plt
 
 
+def add_rectangular_impulse(document, automaton, x0):
+	impulse = document.createElement("box")
+	impulse.setAttribute("x", "11")
+	impulse.setAttribute("y", "11")
+	impulse.setAttribute("height", str(height-21))
+	impulse.setAttribute("width", str(width/2 - 10))
+	impulse.setAttribute("probability", str(x0))
+	impulse.setAttribute("state", "x")
+	automaton.appendChild(impulse)
+
+
+def add_circular_impulse(document, automaton, x0):
+	impulse = document.createElement("circle")
+	impulse.setAttribute("x", "10")
+	impulse.setAttribute("y", str(height / 2))
+	impulse.setAttribute("radius", str(min(height-25, width-25)/2))
+	impulse.setAttribute("probability", str(x0))
+	impulse.setAttribute("state", "x")
+	automaton.appendChild(impulse)
+
+	wipe_extra_impulse = document.createElement("box")
+	wipe_extra_impulse.setAttribute("x", "0")
+	wipe_extra_impulse.setAttribute("y", "0")
+	wipe_extra_impulse.setAttribute("height", str(height))
+	wipe_extra_impulse.setAttribute("width", "10")
+	automaton.appendChild(wipe_extra_impulse)
+
+
+def add_complete_impulse(document, automaton, x0):
+	impulse = document.createElement("box")
+	impulse.setAttribute("x", "11")
+	impulse.setAttribute("y", "11")
+	impulse.setAttribute("height", str(height-21))
+	impulse.setAttribute("width", str(width-21))
+	impulse.setAttribute("probability", str(x0))
+	impulse.setAttribute("state", "x")
+	automaton.appendChild(impulse)
+
+
 def create_automaton(p, q, r, x0, filename):
 	newdoc = getDOMImplementation().createDocument(None, "automaton", None)
 	automaton = newdoc.documentElement
@@ -85,6 +124,10 @@ def create_automaton(p, q, r, x0, filename):
 
 	# Cells
 	#
+	#add_rectangular_impulse(newdoc, automaton, x0)
+	#add_circular_impulse(newdoc, automaton, x0)
+	add_complete_impulse(newdoc, automaton, x0)
+
 	neuron_top = newdoc.createElement("box")
 	neuron_top.setAttribute("x", "10")
 	neuron_top.setAttribute("y", "10")
@@ -117,15 +160,6 @@ def create_automaton(p, q, r, x0, filename):
 	neuron_right.setAttribute("state", "m")
 	automaton.appendChild(neuron_right)
 
-	impulse = newdoc.createElement("box")
-	impulse.setAttribute("x", "11")
-	impulse.setAttribute("y", "11")
-	impulse.setAttribute("height", str(height-21))
-	impulse.setAttribute("width", str(width/2 - 10))
-	impulse.setAttribute("probability", str(x0))
-	impulse.setAttribute("state", "x")
-	automaton.appendChild(impulse)
-
 	with open(filename, "w") as f:
 		f.write(newdoc.toxml())
 
@@ -141,6 +175,15 @@ def count_concentration(filename):
 	return float(count) / ((width-20)*(height-20)/2)
 
 
+def count_overall_concentration(filename):
+	dom = parse(filename)
+	count = 0
+	for node in dom.getElementsByTagName("cell"):
+		if node.getAttribute("state") == "x":
+			count += 1
+	return float(count) / ((width-20)*(height-20))
+
+
 def run_oneshot(p, q, r, x0):
 	filename = "/tmp/test.xml"
 	create_automaton(p, q, r, x0, filename)
@@ -150,7 +193,7 @@ def run_oneshot(p, q, r, x0):
 			subprocess.check_call(["./cellular", "-i", filename, "-c", "-o", filename, "-s" + str(dsteps)])
 		except:
 			pass
-		points.append(count_concentration(filename))
+		points.append(count_overall_concentration(filename))
 	return points
 
 
