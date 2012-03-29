@@ -159,7 +159,7 @@ def walk_q(p, r, x0):
 		if r+q >= 1:
 			break
 		points = [0 for i in range(1, time_steps)]
-		for i in range(1, averaging):
+		for i in range(0, averaging):
 			points = map(lambda x, y: x+y, points, run_oneshot(p, q, r, x0))
 		points = map(lambda x: x/averaging, points)
 		plt.plot([t*dsteps for t in range(1, time_steps)], points, label="q="+str(q))
