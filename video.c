@@ -78,8 +78,8 @@ void* open_renderer(struct Automaton* automaton, const char* filename)
 	fmt = guess_stream_format(NULL, filename, NULL);
 	if(!fmt)
 	{
-		printf("Couldn't deduce output format from file extension: using AVI.\n");
-		fmt = guess_stream_format("avi", NULL, NULL);
+		printf("Couldn't deduce output format from file extension: using Matroska.\n");
+		fmt = guess_stream_format("matroska", NULL, NULL);
 	}
 	if(!fmt)
 	{
@@ -109,7 +109,7 @@ void* open_renderer(struct Automaton* automaton, const char* filename)
 			return NULL;
 		}
 		c = st->codec;
-		c->codec_id = fmt->video_codec;
+		c->codec_id = CODEC_ID_MPEG4;
 		c->codec_type = CODEC_TYPE_VIDEO;
 		c->bit_rate = 400000;
 		c->width = width;
