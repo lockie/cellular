@@ -8,7 +8,7 @@ LDFLAGS=`pkg-config --silence-errors --libs libxml-2.0 libavformat libswscale` -
 
 all: cellular
 
-cellular: main.o automaton.o video.o
+cellular: main.o automaton.o video.o ass.o
 	$(LD) $^ $(LDFLAGS) -o $@
 
 %.o: %.c
