@@ -8,11 +8,12 @@
 #include "video.h"
 
 
-static const char* opt_string = "i:o:cs:w:vh?";
+static const char* opt_string = "i:o:cCs:w:vh?";
 static const struct option long_opts[] = {
 	{ "infile", 	required_argument,	NULL,	'i' },
 	{ "outfile",	required_argument,	NULL,	'o' },
 	{ "characters",	no_argument,		NULL,	'c' },
+	{ "cpu",		no_argument,		NULL,	'C' },
 	{ "steps", 		required_argument,	NULL,	's' },
 	{ "watermark",	required_argument,	NULL,	'w' },
 	{ "verbose",	no_argument,		NULL,	'v' },
@@ -28,7 +29,7 @@ int main(int argc, char** argv)
 {
 	struct Automaton* automaton;
 	void* renderer = NULL;
-	int i, verbose = 0, idx = 0, characters = 0;
+	int i, verbose = 0, idx = 0, characters = 0, CPU = 0;
 	const char *infile = NULL, *outfile = NULL, *watermark = NULL;
 	int steps = 0;
 
@@ -46,6 +47,9 @@ int main(int argc, char** argv)
 				break;
 			case 'c':
 				characters = 1;
+				break;
+			case 'C':
+				CPU = 1;
 				break;
 			case 's':
 				steps = atoi(optarg);
@@ -99,13 +103,21 @@ int main(int argc, char** argv)
 
 	/* Провести симуляцию */
 	srand(time(NULL));
-	for(i = 0; i < steps; i++)
+	if(characters && !CPU)
+		tick_cuda(automaton, steps);
+	else
 	{
-		if(!characters)
-			render(renderer, automaton, watermark);
-		tick(automaton);
-		if(verbose)
-			printf("Tick %4d/%d\r", automaton->ticks, steps);
+		for(i = 0; i < steps; i++)
+		{
+			if(!characters)
+				render(renderer, automaton, watermark);
+			if(CPU)
+				tick(automaton);
+			else
+				tick_cuda(automaton, 1);
+			if(verbose)
+				printf("Tick %4d/%d\r", automaton->ticks, steps);
+		}
 	}
 
 	if(characters)
@@ -124,6 +136,7 @@ void display_usage(const char* progname)
 	printf("\t-i, --infile=<file>\tInput file (cellular automaton in XML format)\n");
 	printf("\t-o, --outfile=<file>\tOutput file (video in mkv container/automaton in XML)\n");
 	printf("\t-c, --characters\tWrite final state of cellular automaton in XML format instead of video\n");
+	printf("\t-C, --CPU\t\tForce CPU (non-CUDA) implementation\n");
 	printf("\t-s, --steps=<number>\tNumber of simulation steps (defaults to 100)\n");
 	printf("\t-w, --watermark=<text>\tWatermark printed as a subtitle on each video frame\n");
 	printf("\t-v, --verbose\t\tBe verbose (show fancy progressbar)\n");
