@@ -52,8 +52,9 @@ __global__ void partitionHorizontalKernel(curandState* state,
 		while(float(curand(&state[idx])) / UINT_MAX < omega &&
 			(len + x < width))
 			len++;
-		// we assume that partition array memset'ed with zeroes
 		partition[idx] = len;
+		for(int i = 1; i < len; i++)
+			partition[idx+i] = 0;
 		x += len;
 	}
 }
@@ -73,8 +74,9 @@ __global__ void partitionVerticalKernel(curandState* state,
 		while(float(curand(&state[idx])) / UINT_MAX < omega &&
 			(len + y < height))
 			len++;
-		// we assume that partition array memset'ed with zeroes
 		partition[idx] = len;
+		for(int i = 1; i < len; i++)
+			partition[(y+i)*width+x] = 0;
 		y += len;
 	}
 }
@@ -247,9 +249,6 @@ __host__ void tick_cuda(struct Automaton* automaton, size_t steps)
 
 	for(k = 0; k < steps; k++)
 	{
-		CUDA_SAFE_CALL(cudaMemset(partition_dev, 0,
-			automaton->size * sizeof(int)));
-
 		if(rand() > RAND_MAX/2)
 		{
 			partitionHorizontalKernel<<<dimHorizontalGrid, dimHorizontalBlock>>>(
