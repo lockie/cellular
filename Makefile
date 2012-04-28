@@ -1,5 +1,5 @@
 
-CC=gcc -pipe -c -Wall -Wextra -pedantic -ansi -std=c99 -Wshadow -Wpointer-arith\
+CC=gcc -pipe -Wall -Wextra -pedantic -ansi -std=gnu99 -Wshadow -Wpointer-arith\
  -Wcast-qual -Wstrict-prototypes -Wmissing-prototypes\
  -Wno-implicit-function-declaration -Wno-deprecated-declarations
 NVCC=nvcc
