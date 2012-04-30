@@ -198,7 +198,7 @@ __host__ void tick_cuda(struct Automaton* automaton, size_t steps)
 	if(!automaton->rules)
 		return;
 
-	automaton->ticks++;
+	automaton->ticks += steps;
 
 	/* Выделить память, скопировать правила и проинициализировать ГСЧ,
 	 если нужно */
