@@ -2,3 +2,11 @@
 *.co
 *.mkv
 *.png
+Debug
+Release
+ipch
+contrib
+*.dll
+*sdf
+*.suo
+*.user

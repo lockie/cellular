@@ -19,6 +19,10 @@
 # define PKT_FLAG_KEY AV_PKT_FLAG_KEY
 #endif  /* PKT_FLAG_KEY */
 
+#if _MSC_VER
+# define snprintf _snprintf
+#endif
+
 #include "automaton.h"
 #include "video.h"
 
@@ -167,12 +171,12 @@ void* open_renderer(struct Automaton* automaton, const char* filename)
 	if(!codec_sub)
 	{
 		printf("Subtitles codec not found\n");
-		return NULL;
+		st_sub = NULL;
 	}
 	if(avcodec_open(c_sub, codec_sub) < 0)
 	{
 		printf("Could not open subtitles codec\n");
-		return NULL;
+		st_sub = NULL;
 	}
 
 	video_outbuf = NULL;
@@ -312,38 +316,41 @@ void render(void* renderer, struct Automaton* automaton, const char* text)
 		return;
 	}
 
-	snprintf(sub_str, SUB_STR_LEN, "Frame %d", r->frame_count);
-	memset(&sub, 0, sizeof(sub));
-	if(text)
+	if(r->st_sub)
 	{
-		strcat(sub_str, "  ");
-		strncat(sub_str, text, SUB_STR_LEN - strlen(sub_str));
-	}
-	if(ff_ass_add_rect(&sub, sub_str, 100 * r->frame_count / FRAME_RATE,
-		4 + 100 * r->frame_count / FRAME_RATE, 0) <= 0)
-	{
-		printf("Unable to render subtitle\n");
-	} else
-	{
-		ret = avcodec_encode_subtitle(r->st_sub->codec, &sub_buffer[0],
-			SUB_BUFFER_SIZE, &sub);
-		if(ret < 0)
+		snprintf(sub_str, SUB_STR_LEN, "Frame %d", r->frame_count);
+		memset(&sub, 0, sizeof(sub));
+		if(text)
 		{
-			printf("Unable to encode subtitle\n");
-		} else {
-			AVPacket pkt;
-			av_init_packet(&pkt);
-			pkt.stream_index = r->st_sub->index;
-			if(c->coded_frame->pts != (int64_t)AV_NOPTS_VALUE)
-				pkt.pts = av_rescale_q(c->coded_frame->pts, c->time_base,
-					st->time_base);
-			if(c->coded_frame->key_frame)
-				pkt.flags |= PKT_FLAG_KEY;
-			pkt.data = sub_buffer;
-			pkt.size = ret;
-			if(av_interleaved_write_frame(oc, &pkt) < 0)
+			strcat(sub_str, "  ");
+			strncat(sub_str, text, SUB_STR_LEN - strlen(sub_str));
+		}
+		if(ff_ass_add_rect(&sub, sub_str, 100 * r->frame_count / FRAME_RATE,
+			4 + 100 * r->frame_count / FRAME_RATE, 0) <= 0)
+		{
+			printf("Unable to render subtitle\n");
+		} else
+		{
+			ret = avcodec_encode_subtitle(r->st_sub->codec, &sub_buffer[0],
+				SUB_BUFFER_SIZE, &sub);
+			if(ret < 0)
 			{
-				printf("Unable to write subtitle frame\n");
+				printf("Unable to encode subtitle\n");
+			} else {
+				AVPacket pkt;
+				av_init_packet(&pkt);
+				pkt.stream_index = r->st_sub->index;
+				if(c->coded_frame->pts != (int64_t)AV_NOPTS_VALUE)
+					pkt.pts = av_rescale_q(c->coded_frame->pts, c->time_base,
+						st->time_base);
+				if(c->coded_frame->key_frame)
+					pkt.flags |= PKT_FLAG_KEY;
+				pkt.data = sub_buffer;
+				pkt.size = ret;
+				if(av_interleaved_write_frame(oc, &pkt) < 0)
+				{
+					printf("Unable to write subtitle frame\n");
+				}
 			}
 		}
 	}

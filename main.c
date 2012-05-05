@@ -4,6 +4,10 @@
 #include <time.h>
 #include <getopt.h>
 
+#ifdef _MSC_VER
+# include <windows.h>
+#endif  // _MSC_VER
+
 #include "automaton.h"
 #include "video.h"
 
@@ -13,7 +17,9 @@ static const struct option long_opts[] = {
 	{ "infile", 	required_argument,	NULL,	'i' },
 	{ "outfile",	required_argument,	NULL,	'o' },
 	{ "characters",	no_argument,		NULL,	'c' },
+#ifndef _MSC_VER  // TODO : CUDA under windows
 	{ "cpu",		no_argument,		NULL,	'C' },
+#endif
 	{ "timings",	no_argument,		NULL,	't' },
 	{ "steps", 		required_argument,	NULL,	's' },
 	{ "watermark",	required_argument,	NULL,	'w' },
@@ -33,7 +39,11 @@ int main(int argc, char** argv)
 	int i, verbose = 0, idx = 0, characters = 0, CPU = 0, timings = 0;
 	const char *infile = NULL, *outfile = NULL, *watermark = NULL;
 	int steps = 0;
+#ifdef _MSC_VER
+	LARGE_INTEGER start, end, freq;
+#else  // _MSC_VER
 	struct timespec start, end;
+#endif  // _MSC_VER
 
 	/* Разобрать параметры */
 	int r = getopt_long(argc, argv, opt_string, long_opts, &idx);
@@ -107,11 +117,24 @@ int main(int argc, char** argv)
 	}
 
 	/* Провести симуляцию */
-	srand(time(NULL));
+	srand((unsigned int)time(NULL));
+#ifdef _MSC_VER
+	if(!QueryPerformanceFrequency(&freq))
+	{
+		printf("Unable to get timer frequency!\n");
+		freq.QuadPart = 0;
+	}
+	if(!QueryPerformanceCounter(&start))
+	{
+		printf("Unable to query timer!\n");
+		freq.QuadPart = 0;
+	}
+#else  // _MSC_VER
 	clock_gettime(CLOCK_MONOTONIC_RAW, &start);
 	if(characters && !CPU)
 		tick_cuda(automaton, steps);
 	else
+#endif  // _MSC_VER
 	{
 		for(i = 0; i < steps; i++)
 		{
@@ -119,21 +142,32 @@ int main(int argc, char** argv)
 				render(renderer, automaton, watermark);
 			if(CPU)
 				tick(automaton);
+#ifndef _MSC_VER
 			else
 				tick_cuda(automaton, 1);
+#endif
 			if(verbose)
 				printf("Tick %4d/%d\r", automaton->ticks, steps);
 		}
 	}
+#ifdef _MSC_VER
+	QueryPerformanceCounter(&end);
+#else  // _MSC_VER
 	clock_gettime(CLOCK_MONOTONIC, &end);
+#endif  // _MSC_VER
 
 	if(characters)
 		save_automaton(automaton, outfile);
 
 	if(timings)
 	{
+#ifdef _MSC_VER
+		double elapsed = freq.QuadPart == 0 ? 0.0 :
+			(double)(end.QuadPart - start.QuadPart) / freq.QuadPart;
+#else  // _MSC_VER
 		double elapsed = (end.tv_sec - start.tv_sec) +
 			(double)(end.tv_nsec - start.tv_nsec) / 1.0e9;
+#endif  // _MSC_VER
 		printf("Took %f s\n", elapsed);
 	}
 
@@ -150,7 +184,9 @@ void display_usage(const char* progname)
 	printf("\t-i, --infile=<file>\tInput file (cellular automaton in XML format)\n");
 	printf("\t-o, --outfile=<file>\tOutput file (video in mkv container/automaton in XML)\n");
 	printf("\t-c, --characters\tWrite final state of cellular automaton in XML format instead of video\n");
+#ifndef _MSC_VER
 	printf("\t-C, --cpu\t\tForce CPU (non-CUDA) implementation\n");
+#endif
 	printf("\t-t, --timings\t\tDo timings\n");
 	printf("\t-s, --steps=<number>\tNumber of simulation steps (defaults to 100)\n");
 	printf("\t-w, --watermark=<text>\tWatermark printed as a subtitle on each video frame\n");
