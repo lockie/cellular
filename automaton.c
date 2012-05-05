@@ -404,7 +404,7 @@ int save_automaton(struct Automaton* a, const char* filename)
 cleanup:
 	xmlFreeTextWriter(writer);
 	if(rc >= 0)
-		xmlSaveFileEnc(filename, doc, "UTF-8");
+		xmlSaveFormatFileEnc(filename, doc, "UTF-8", 1);
 	xmlFreeDoc(doc);
 	return rc;
 }
