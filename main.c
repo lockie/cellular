@@ -153,7 +153,7 @@ int main(int argc, char** argv)
 #ifdef _MSC_VER
 	QueryPerformanceCounter(&end);
 #else  // _MSC_VER
-	clock_gettime(CLOCK_MONOTONIC, &end);
+	clock_gettime(CLOCK_MONOTONIC_RAW, &end);
 #endif  // _MSC_VER
 
 	if(characters)
