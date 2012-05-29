@@ -1,0 +1,336 @@
+<?xml version="1.0" ?>
+<automaton height="22" width="37">
+
+	<zerostate name="0"/>
+	<state name="1"/>  <!-- neurite ("wire") -->
+	<state name="2"/>  <!-- exciatory dendrite -->
+	<state name="3"/>  <!-- axon -->
+	<state name="4"/>  <!-- inhibitory dendrite -->
+	<state name="5"/>  <!-- neurite intersection -->
+	<state name="."/>  <!-- external impulse -->
+	<state name="x"/>  <!-- internal neuron exciatory impulse -->
+	<state name="y"/>  <!-- internal neuron inhibitory impulse -->
+	<state name="A"/>  <!-- decayed exciatory neurite -->
+	<state name="B"/>  <!-- decayed inhibitory neurite -->
+
+	<!-- internal impulse diffusion -->
+<!--	<rule oldstate="xy1" newstate="x1y" probability="0.5" />
+	<rule oldstate="xy1" newstate="yx1" probability="0.5" />
+	<rule oldstate="x1y" newstate="xy1" probability="0.5" />
+	<rule oldstate="yx1" newstate="xy1" probability="0.5" /> -->
+	<rule oldstate="x1" newstate="1x" probability="0.9" /> <!-- theta -->
+	<rule oldstate="1x" newstate="x1" probability="0.9" />
+	<rule oldstate="y1" newstate="1y" probability="0.9" />
+	<rule oldstate="1y" newstate="y1" probability="0.9" />
+	<rule oldstate="xy" newstate="yx" probability="0.9" />
+	<rule oldstate="yx" newstate="xy" probability="0.9" />
+
+	<!-- inhibitory impulse throw through membrane -->
+	<rule oldstate=".41" newstate=".4y" probability="1" /> <!-- p_1 -->
+	<rule oldstate="14." newstate="y4." probability="1" />
+	<rule oldstate=".4x" newstate=".4y" probability="0.1" /> <!-- p_2 -->
+	<rule oldstate="x4." newstate="y4." probability="0.1" />
+
+	<!-- excitatory impulse flow through membrane -->
+	<rule oldstate=".21" newstate=".2x" probability="1" /> <!-- p_3 -->
+	<rule oldstate="12." newstate="x2." probability="1" />
+	<rule oldstate=".2y" newstate=".2x" probability="0.1" /> <!-- p_4 -->
+	<rule oldstate="y2." newstate="x2." probability="0.1" />
+
+	<!-- inhibitory membrane decay -->
+	<rule oldstate=".4" newstate=".B" probability="0.02" /> <!-- p_5 -->
+	<rule oldstate="4." newstate="B." probability="0.02" />
+
+	<!-- excitatory membrane decay -->
+	<rule oldstate=".2" newstate=".A" probability="0.02" /> <!-- p_6 -->
+	<rule oldstate="2." newstate="A." probability="0.02" />
+
+	<!-- internal impulse propagation -->
+	<rule oldstate="xx1" newstate="xxx" probability="0.3" /> <!-- p_7 = p-->
+	<rule oldstate="1xx" newstate="xxx" probability="0.3" />
+	<rule oldstate="yx" newstate="y1" probability="0.7" /> <!-- p_8 = q-->
+	<rule oldstate="xy" newstate="1y" probability="0.7" />
+	<rule oldstate="x1" newstate="11" probability="0.01" /><!-- p_9 = u-->
+	<rule oldstate="1x" newstate="11" probability="0.01" />
+	<rule oldstate="y1" newstate="11" probability="0.001" /><!-- p_10 = v-->
+	<rule oldstate="1y" newstate="11" probability="0.001" />
+
+	<!-- external impulse diffusion -->
+	<rule oldstate=".1" newstate=".." probability="1.0" />
+	<rule oldstate="1." newstate=".." probability="1.0" />
+	<rule oldstate=".51" newstate=".5." probability="1.0" />
+	<rule oldstate="15." newstate=".5." probability="1.0" />
+
+	<!-- axon impulse propagation -->
+	<rule oldstate="x31" newstate="x3." probability="0.5"/>
+
+	<!-- h=6, w=29; S=174  -->
+
+	<cell state="1" x="0" y="1"/>
+	<cell state="1" x="1" y="1"/>
+	<cell state="1" x="2" y="1"/>
+	<cell state="1" x="3" y="1"/>
+	<cell state="1" x="4" y="1"/>
+	<cell state="1" x="5" y="1"/>
+	<cell state="1" x="5" y="2"/>
+	<cell state="1" x="4" y="3"/>
+	<cell state="1" x="5" y="3"/>
+	<cell state="1" x="6" y="3"/>
+	<cell state="1" x="3" y="4"/>
+	<cell state="1" x="4" y="4"/>
+	<cell state="1" x="5" y="4"/>
+	<cell state="1" x="6" y="4"/>
+	<cell state="1" x="7" y="4"/>
+	<cell state="1" x="2" y="5"/>
+	<cell state="1" x="3" y="5"/>
+	<cell state="1" x="4" y="5"/>
+	<cell state="1" x="5" y="5"/>
+	<cell state="1" x="6" y="5"/>
+	<cell state="1" x="7" y="5"/>
+	<cell state="1" x="8" y="5"/>
+	<cell state="1" x="1" y="6"/>
+	<cell state="1" x="2" y="6"/>
+	<cell state="1" x="3" y="6"/>
+	<cell state="1" x="4" y="6"/>
+	<cell state="1" x="5" y="6"/>
+	<cell state="1" x="6" y="6"/>
+	<cell state="1" x="7" y="6"/>
+	<cell state="1" x="8" y="6"/>
+	<cell state="1" x="9" y="6"/>
+	<cell state="2" x="1" y="7"/>
+	<cell state="2" x="2" y="7"/>
+	<cell state="2" x="3" y="7"/>
+	<cell state="2" x="4" y="7"/>
+	<cell state="2" x="5" y="7"/>
+	<cell state="2" x="6" y="7"/>
+	<cell state="2" x="7" y="7"/>
+	<cell state="2" x="8" y="7"/>
+	<cell state="2" x="9" y="7"/>
+	<cell state="1" x="1" y="8"/>
+	<cell state="1" x="2" y="8"/>
+	<cell state="1" x="3" y="8"/>
+	<cell state="1" x="4" y="8"/>
+	<cell state="1" x="5" y="8"/>
+	<cell state="1" x="6" y="8"/>
+	<cell state="1" x="7" y="8"/>
+	<cell state="1" x="8" y="8"/>
+	<cell state="1" x="9" y="8"/>
+	<cell state="1" x="10" y="8"/>
+	<cell state="1" x="11" y="8"/>
+	<cell state="1" x="12" y="8"/>
+	<cell state="1" x="13" y="8"/>
+	<cell state="1" x="14" y="8"/>
+	<cell state="1" x="15" y="8"/>
+	<cell state="1" x="16" y="8"/>
+	<cell state="1" x="17" y="8"/>
+	<cell state="1" x="18" y="8"/>
+	<cell state="1" x="19" y="8"/>
+	<cell state="1" x="20" y="8"/>
+	<cell state="1" x="21" y="8"/>
+	<cell state="1" x="22" y="8"/>
+	<cell state="1" x="23" y="8"/>
+	<cell state="1" x="24" y="8"/>
+	<cell state="1" x="25" y="8"/>
+	<cell state="1" x="26" y="8"/>
+	<cell state="1" x="27" y="8"/>
+	<cell state="1" x="28" y="8"/>
+	<cell state="1" x="29" y="8"/>
+	<cell state="1" x="1" y="9"/>
+	<cell state="1" x="2" y="9"/>
+	<cell state="1" x="3" y="9"/>
+	<cell state="1" x="4" y="9"/>
+	<cell state="1" x="5" y="9"/>
+	<cell state="1" x="6" y="9"/>
+	<cell state="1" x="7" y="9"/>
+	<cell state="1" x="8" y="9"/>
+	<cell state="1" x="9" y="9"/>
+	<cell state="1" x="10" y="9"/>
+	<cell state="1" x="11" y="9"/>
+	<cell state="1" x="12" y="9"/>
+	<cell state="1" x="13" y="9"/>
+	<cell state="1" x="14" y="9"/>
+	<cell state="1" x="15" y="9"/>
+	<cell state="1" x="16" y="9"/>
+	<cell state="1" x="17" y="9"/>
+	<cell state="1" x="18" y="9"/>
+	<cell state="1" x="19" y="9"/>
+	<cell state="1" x="20" y="9"/>
+	<cell state="1" x="21" y="9"/>
+	<cell state="1" x="22" y="9"/>
+	<cell state="1" x="23" y="9"/>
+	<cell state="1" x="24" y="9"/>
+	<cell state="1" x="25" y="9"/>
+	<cell state="1" x="26" y="9"/>
+	<cell state="1" x="27" y="9"/>
+	<cell state="1" x="28" y="9"/>
+	<cell state="1" x="29" y="9"/>
+	<cell state="1" x="1" y="10"/>
+	<cell state="1" x="2" y="10"/>
+	<cell state="1" x="3" y="10"/>
+	<cell state="1" x="4" y="10"/>
+	<cell state="1" x="5" y="10"/>
+	<cell state="1" x="6" y="10"/>
+	<cell state="1" x="7" y="10"/>
+	<cell state="1" x="8" y="10"/>
+	<cell state="1" x="9" y="10"/>
+	<cell state="1" x="10" y="10"/>
+	<cell state="1" x="11" y="10"/>
+	<cell state="1" x="12" y="10"/>
+	<cell state="1" x="13" y="10"/>
+	<cell state="1" x="14" y="10"/>
+	<cell state="1" x="15" y="10"/>
+	<cell state="1" x="16" y="10"/>
+	<cell state="1" x="17" y="10"/>
+	<cell state="1" x="18" y="10"/>
+	<cell state="1" x="19" y="10"/>
+	<cell state="1" x="20" y="10"/>
+	<cell state="1" x="21" y="10"/>
+	<cell state="1" x="22" y="10"/>
+	<cell state="1" x="23" y="10"/>
+	<cell state="1" x="24" y="10"/>
+	<cell state="1" x="25" y="10"/>
+	<cell state="1" x="26" y="10"/>
+	<cell state="1" x="27" y="10"/>
+	<cell state="1" x="28" y="10"/>
+	<cell state="1" x="29" y="10"/>
+	<cell state="3" x="30" y="10"/>
+	<cell state="1" x="31" y="10"/>
+	<cell state="1" x="32" y="10"/>
+	<cell state="1" x="33" y="10"/>
+	<cell state="1" x="34" y="10"/>
+	<cell state="1" x="35" y="10"/>
+	<cell state="1" x="36" y="10"/>
+	<cell state="1" x="1" y="11"/>
+	<cell state="1" x="2" y="11"/>
+	<cell state="1" x="3" y="11"/>
+	<cell state="1" x="4" y="11"/>
+	<cell state="1" x="5" y="11"/>
+	<cell state="1" x="6" y="11"/>
+	<cell state="1" x="7" y="11"/>
+	<cell state="1" x="8" y="11"/>
+	<cell state="1" x="9" y="11"/>
+	<cell state="1" x="10" y="11"/>
+	<cell state="1" x="11" y="11"/>
+	<cell state="1" x="12" y="11"/>
+	<cell state="1" x="13" y="11"/>
+	<cell state="1" x="14" y="11"/>
+	<cell state="1" x="15" y="11"/>
+	<cell state="1" x="16" y="11"/>
+	<cell state="1" x="17" y="11"/>
+	<cell state="1" x="18" y="11"/>
+	<cell state="1" x="19" y="11"/>
+	<cell state="1" x="20" y="11"/>
+	<cell state="1" x="21" y="11"/>
+	<cell state="1" x="22" y="11"/>
+	<cell state="1" x="23" y="11"/>
+	<cell state="1" x="24" y="11"/>
+	<cell state="1" x="25" y="11"/>
+	<cell state="1" x="26" y="11"/>
+	<cell state="1" x="27" y="11"/>
+	<cell state="1" x="28" y="11"/>
+	<cell state="1" x="29" y="11"/>
+	<cell state="1" x="1" y="12"/>
+	<cell state="1" x="2" y="12"/>
+	<cell state="1" x="3" y="12"/>
+	<cell state="1" x="4" y="12"/>
+	<cell state="1" x="5" y="12"/>
+	<cell state="1" x="6" y="12"/>
+	<cell state="1" x="7" y="12"/>
+	<cell state="1" x="8" y="12"/>
+	<cell state="1" x="9" y="12"/>
+	<cell state="1" x="10" y="12"/>
+	<cell state="1" x="11" y="12"/>
+	<cell state="1" x="12" y="12"/>
+	<cell state="1" x="13" y="12"/>
+	<cell state="1" x="14" y="12"/>
+	<cell state="1" x="15" y="12"/>
+	<cell state="1" x="16" y="12"/>
+	<cell state="1" x="17" y="12"/>
+	<cell state="1" x="18" y="12"/>
+	<cell state="1" x="19" y="12"/>
+	<cell state="1" x="20" y="12"/>
+	<cell state="1" x="21" y="12"/>
+	<cell state="1" x="22" y="12"/>
+	<cell state="1" x="23" y="12"/>
+	<cell state="1" x="24" y="12"/>
+	<cell state="1" x="25" y="12"/>
+	<cell state="1" x="26" y="12"/>
+	<cell state="1" x="27" y="12"/>
+	<cell state="1" x="28" y="12"/>
+	<cell state="1" x="29" y="12"/>
+	<cell state="1" x="1" y="13"/>
+	<cell state="1" x="2" y="13"/>
+	<cell state="1" x="3" y="13"/>
+	<cell state="1" x="4" y="13"/>
+	<cell state="1" x="5" y="13"/>
+	<cell state="1" x="6" y="13"/>
+	<cell state="1" x="7" y="13"/>
+	<cell state="1" x="8" y="13"/>
+	<cell state="1" x="9" y="13"/>
+	<cell state="1" x="10" y="13"/>
+	<cell state="1" x="11" y="13"/>
+	<cell state="1" x="12" y="13"/>
+	<cell state="1" x="13" y="13"/>
+	<cell state="1" x="14" y="13"/>
+	<cell state="1" x="15" y="13"/>
+	<cell state="1" x="16" y="13"/>
+	<cell state="1" x="17" y="13"/>
+	<cell state="1" x="18" y="13"/>
+	<cell state="1" x="19" y="13"/>
+	<cell state="1" x="20" y="13"/>
+	<cell state="1" x="21" y="13"/>
+	<cell state="1" x="22" y="13"/>
+	<cell state="1" x="23" y="13"/>
+	<cell state="1" x="24" y="13"/>
+	<cell state="1" x="25" y="13"/>
+	<cell state="1" x="26" y="13"/>
+	<cell state="1" x="27" y="13"/>
+	<cell state="1" x="28" y="13"/>
+	<cell state="1" x="29" y="13"/>
+	<cell state="2" x="1" y="14"/>
+	<cell state="2" x="2" y="14"/>
+	<cell state="2" x="3" y="14"/>
+	<cell state="2" x="4" y="14"/>
+	<cell state="2" x="5" y="14"/>
+	<cell state="2" x="6" y="14"/>
+	<cell state="2" x="7" y="14"/>
+	<cell state="2" x="8" y="14"/>
+	<cell state="2" x="9" y="14"/>
+	<cell state="1" x="1" y="15"/>
+	<cell state="1" x="2" y="15"/>
+	<cell state="1" x="3" y="15"/>
+	<cell state="1" x="4" y="15"/>
+	<cell state="1" x="5" y="15"/>
+	<cell state="1" x="6" y="15"/>
+	<cell state="1" x="7" y="15"/>
+	<cell state="1" x="8" y="15"/>
+	<cell state="1" x="9" y="15"/>
+	<cell state="1" x="2" y="16"/>
+	<cell state="1" x="3" y="16"/>
+	<cell state="1" x="4" y="16"/>
+	<cell state="1" x="5" y="16"/>
+	<cell state="1" x="6" y="16"/>
+	<cell state="1" x="7" y="16"/>
+	<cell state="1" x="8" y="16"/>
+	<cell state="1" x="3" y="17"/>
+	<cell state="1" x="4" y="17"/>
+	<cell state="1" x="5" y="17"/>
+	<cell state="1" x="6" y="17"/>
+	<cell state="1" x="7" y="17"/>
+	<cell state="1" x="4" y="18"/>
+	<cell state="1" x="5" y="18"/>
+	<cell state="1" x="6" y="18"/>
+	<cell state="1" x="5" y="19"/>
+	<cell state="1" x="5" y="20"/>
+	<cell state="1" x="0" y="21"/>
+	<cell state="1" x="1" y="21"/>
+	<cell state="1" x="2" y="21"/>
+	<cell state="1" x="3" y="21"/>
+	<cell state="1" x="4" y="21"/>
+	<cell state="1" x="5" y="21"/>
+
+	<!-- input impulse -->
+	<cell state="." x="0" y="1"/>
+<!--	<cell state="." x="0" y="21"/>  -->
+</automaton>
+
