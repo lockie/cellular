@@ -12,7 +12,7 @@
 #include "video.h"
 
 
-static const char* opt_string = "i:o:cCts:w:vh?";
+static const char* opt_string = "i:o:cCq:ts:w:vh?";
 static const struct option long_opts[] = {
 	{ "infile", 	required_argument,	NULL,	'i' },
 	{ "outfile",	required_argument,	NULL,	'o' },
@@ -20,6 +20,7 @@ static const struct option long_opts[] = {
 #ifndef _MSC_VER  // TODO : CUDA under windows
 	{ "cpu",		no_argument,		NULL,	'C' },
 #endif
+	{ "quantity",	required_argument,	NULL,	'q' },
 	{ "timings",	no_argument,		NULL,	't' },
 	{ "steps", 		required_argument,	NULL,	's' },
 	{ "watermark",	required_argument,	NULL,	'w' },
@@ -38,6 +39,7 @@ int main(int argc, char** argv)
 	void* renderer = NULL;
 	int i, verbose = 0, idx = 0, characters = 0, CPU = 0, timings = 0;
 	const char *infile = NULL, *outfile = NULL, *watermark = NULL;
+	char cell = 0;
 	int steps = 0;
 #ifdef _MSC_VER
 	LARGE_INTEGER start, end, freq;
@@ -62,6 +64,9 @@ int main(int argc, char** argv)
 				break;
 			case 'C':
 				CPU = 1;
+				break;
+			case 'q':
+				cell = optarg[0];
 				break;
 			case 't':
 				timings = 1;
@@ -131,7 +136,7 @@ int main(int argc, char** argv)
 	}
 #else  // _MSC_VER
 	clock_gettime(CLOCK_MONOTONIC_RAW, &start);
-	if(characters && !CPU)
+	if(characters && !CPU && !cell)
 		tick_cuda(automaton, steps);
 	else
 #endif  // _MSC_VER
@@ -146,8 +151,16 @@ int main(int argc, char** argv)
 			else
 				tick_cuda(automaton, 1);
 #endif
-			if(verbose)
-				printf("Tick %4d/%d\r", automaton->ticks, steps);
+			if(cell)
+			{
+				if(verbose)
+					printf("%d %f\n", automaton->ticks,
+						count_cells(automaton, cell));
+				else
+					printf("%f\n", count_cells(automaton, cell));
+			} else
+				if(verbose)
+					printf("Tick %4d/%d\r", automaton->ticks, steps);
 		}
 	}
 #ifdef _MSC_VER
@@ -187,6 +200,7 @@ void display_usage(const char* progname)
 #ifndef _MSC_VER
 	printf("\t-C, --cpu\t\tForce CPU (non-CUDA) implementation\n");
 #endif
+	printf("\t-q, --quantity=<cell>\tDrop quantity of given cell to stdout each step\n");
 	printf("\t-t, --timings\t\tDo timings\n");
 	printf("\t-s, --steps=<number>\tNumber of simulation steps (defaults to 100)\n");
 	printf("\t-w, --watermark=<text>\tWatermark printed as a subtitle on each video frame\n");

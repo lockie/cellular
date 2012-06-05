@@ -571,3 +571,14 @@ void tick(struct Automaton* automaton)
 	memcpy(automaton->lattice, newlattice, automaton->size);
 }
 
+double count_cells(struct Automaton* automaton, char cell)
+{
+	int i, j;
+	size_t res = 0;
+	for(i = 0; i < automaton->height; i++)
+		for(j = 0; j < automaton->width; j++)
+			if(CELL(automaton, j, i) == cell)
+				res++;
+	return (double)res / automaton->size;
+}
+

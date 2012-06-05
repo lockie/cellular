@@ -83,6 +83,13 @@ extern void delete_automaton(struct Automaton** a);
 **/
 extern void tick(struct Automaton* automaton);
 
+/** Подсчёт концентрации клеток
+ * @param automaton автомат
+ * @param cell клетка
+ * @return концентрация клеток
+**/
+extern double count_cells(struct Automaton* automaton, char cell);
+
 
 #endif  /* _AUTOMATON_H_ */
 
